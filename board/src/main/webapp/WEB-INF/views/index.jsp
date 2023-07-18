@@ -31,6 +31,8 @@
     <button type="button" id="btn4" class="btns">4</button>
     <button type="button" id="btn5" class="btns">5</button>
     <button type="button" id="btnNext">다음</button>
+    <button type="button" id="btnWrite">글작성</button>
+
 
 <script src="/JS/jquery-3.7.0.min.js"></script>
 <script>
@@ -43,15 +45,17 @@
     
     // 페이지 관련 정보
     let rowsPerPage = 5;        // 페이지 당 건수 (테이블에서 보여지는 최대 건수)
-    let curPage = 0;
+    let curPage = 0;            
     let totalPage = 0;          // 전체 페이지 넘버
 
     // 섹션 관련 정보
     let curSection = 0;         // 현재 섹션 (다음 버튼 = 증가, 이전 버튼 = 감소)
     let pagesPerSection = 5;    // 섹션 당 페이지 수 (버튼 수와 동일)
-    let totalSectionNum = 0;
+    let totalSectionNum = 0;    // 전체 섹션 개수
 
     const spnWelcome = document.querySelector('#spnWelcome');
+
+    const btns = document.querySelectorAll('.btns');
     const btnLogin = document.querySelector('#btnLogin');
 
     const btnPrev = document.querySelector('#btnPrev');
@@ -60,7 +64,9 @@
     const btn3 = document.querySelector('#btn3');
     const btn4 = document.querySelector('#btn4');
     const btn5 = document.querySelector('#btn5');
-    const btnNext = document.querySelector('#btnNext')
+    const btnNext = document.querySelector('#btnNext');
+    const btnWrite = document.querySelector('#btnWrite');
+    
 
     //////////////////////////////////////////////////////////
 
@@ -121,7 +127,6 @@
                 const tblBody = document.querySelector('#tblBBS > tbody');
 
                 // data : 1. 전체 rowCount, 2. bbsList
-
                 // 1. 전체 카운트를 저장한다.
                 rowCount = data.rowCount;
                 // 2. 테이블 body를 채워준다.
@@ -132,7 +137,9 @@
                     bstr = '';
                     bstr += '<tr>';
                         bstr += '<td>' + data.bbsList[i].rowNum + '</td>';
-                        bstr += '<td>' + data.bbsList[i].title + '</td>';
+                        bstr += '<td><a href=\"/bbs/content?userId=' + data.bbsList[i].userId + 
+                                '&seq=' + data.bbsList[i].seq + '\">' + data.bbsList[i].title +
+                                '</a></td>'
                         bstr += '<td>' + data.bbsList[i].userId + '</td>';
                         bstr += '<td>' + data.bbsList[i].regDate + '</td>';
                     bstr += '</tr>';
@@ -141,6 +148,12 @@
                 }
             }
         });
+    }
+
+    // 실제 적용해야 할 페이지를 구하는 함수
+    const getRealPage = function(pageOffset)
+    {
+        return (curSection * pagesPerSection) + pageOffset;
     }
 
 
@@ -160,103 +173,142 @@
         }
     })
 
+    btnWrite.addEventListener('click', ()=>{
+
+        if (sessionState == true)
+        {
+            location.href = "/bbs/newcontent";
+        }
+        else
+        {
+            alert("로그인 후 작성할 수 있습니다.");
+        }
+
+    })
+
     btnPrev.addEventListener('click', ()=>{
 
-        // 현재 rowCount의 개수를 한 번 더 출력
+        // Prev 불가능 : 첫번째 섹션에 위치해있는 경우
+        if (curSection <= 0)
+        {
+            alert("첫번째 섹션입니다.");
+            return;
+        }
         
+        // 서버에 현재 몇 건이 있는지 알아본다.
+        // 코드 수정
 
+        curSection--;
+        let realPage = getRealPage(0);
+        setBBS(realPage);
+
+        // 하단 숫자 버튼 변경
+        let count = 1;
+
+        for (let i = 0; i < btns.length; i++)
+        {
+            btns[i].textContent = getRealPage(count);
+            count++;
+        }
+
+        // 버튼 히든 해제
         totalPage = Math.ceil(rowCount / rowsPerPage) - 1;
         totalSectionNum = Math.ceil(rowCount / rowsPerPage / pagesPerSection) - 1;
 
-        // let rowsPerSection = rowsPerPage * pagesPerSection;
-        // 'rowCount - (rowsPerSection * (curSection + 1)) > 0' 조건을 만족해야 next 가능
-
-        // 1. Prev 불가능 : 첫번째 섹션에 위치해있는 경우
-        if (curSection == 0)
+        if (curSection == (totalSectionNum - 1))
         {
-            return;
-        }
-        // 2. Prev 가능 : 섹션 이동 후 curSection--
-        else
-        {
-            const startPage = (pagesPerSection * (curSection - 1));
-            setBBS(startPage);
-            curSection--;
+            let deleteBtn = ((totalSectionNum + 1) * pagesPerSection) - (totalPage + 1);
+            let count2 = 1
 
-            // 하단 숫자 버튼 변경
-            const btns = document.querySelectorAll('.btns');
-            let count = 1;
-
-            for (let i = 0; i < btns.length; i++)
+            if (deleteBtn > 0)
             {
-                btns[i].textContent = (startPage + count);
-                count++;
+                for (let i = 0; i < deleteBtn; i++)
+                {
+                    btns[count2].style.display = 'inline';
+                    count2++;
+                }
             }
-            curPage = startPage;
         }
+        
     });
 
     btnNext.addEventListener('click', ()=>{
 
         // 현재 rowCount의 개수를 한 번 더 출력
+        // 코드 작성란
 
-        
+        // way 2
+        let rowsPerSection = rowsPerPage * pagesPerSection;
+        let nextRowCount = rowCount - (rowsPerSection * (curSection + 1));
+        if (nextRowCount <= 0)
+        {
+            alert("다음 내용은 없습니다.");
+            return;
+        }
+
+        curSection ++;
+        let realPage = getRealPage(0);
+        setBBS(realPage);
+
+        // 하단 숫자 버튼 변경
+        let count = 1;
+
+        for (let i = 0; i < btns.length; i++)
+        {
+            btns[i].textContent = getRealPage(count);
+            count++;
+        }
+
+        // 버튼 히든
         totalPage = Math.ceil(rowCount / rowsPerPage) - 1;
         totalSectionNum = Math.ceil(rowCount / rowsPerPage / pagesPerSection) - 1;
 
-        // 1. Next 불가능 : 마지막 섹션에 와있는 경우
         if (curSection == totalSectionNum)
         {
-            return;
-        }
-        // 2. Next 가능 : 섹션 이동 후 curSection++
-        else
-        {
-            const startPage = pagesPerSection * (curSection + 1);
-            setBBS(startPage);
-            curSection++;
-
-            // 하단 숫자 버튼 변경
-            const btns = document.querySelectorAll('.btns');
-            let num = 1;
-
-            for (let i = 0; i < btns.length; i++)
+            let deleteBtn = ((totalSectionNum + 1) * pagesPerSection) - (totalPage + 1);
+            let count2 = 1
+            
+            if (deleteBtn > 0)
             {
-                btns[i].textContent = (startPage + num);
-                num++;
+                for (let i = 0; i < deleteBtn; i++)
+                {
+                    btns[count2].style.display = 'none';
+                    count2++;
+                }
             }
-
-            // 버튼 히든 - 수정 중
-            // if (curSection == totalSectionNum)
-            // {
-            //    
-            // }
-
-            // 현재 페이지 저장
-            curPage = startPage;
         }
+
     });
 
     btn1.addEventListener('click', ()=>{
-        setBBS(curPage);
+        const pageOffset = 0;
+        const realPage = getRealPage(pageOffset);
+        setBBS(realPage);
     });
 
     btn2.addEventListener('click', ()=>{
-        setBBS(curPage + 1);
+        const pageOffset = 1;
+        const realPage = getRealPage(pageOffset);
+        setBBS(realPage);
     });
 
     btn3.addEventListener('click', ()=>{
-        setBBS(curPage + 2);
+        const pageOffset = 2;
+        const realPage = getRealPage(pageOffset);
+        setBBS(realPage);
     });
 
     btn4.addEventListener('click', ()=>{
-        setBBS(curPage + 3);
+        const pageOffset = 3;
+        const realPage = getRealPage(pageOffset);
+        setBBS(realPage);
     });
 
     btn5.addEventListener('click', ()=>{
-        setBBS(curPage + 4);
+        const pageOffset = 4;
+        const realPage = getRealPage(pageOffset);
+        setBBS(realPage);
     });
-
 
 
     //////////////////////////////////////////////////////////

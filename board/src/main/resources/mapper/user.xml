@@ -15,6 +15,6 @@
         <!-- 주의 : 세미콜론(;) 사용 X  -->
         SELECT * FROM USER_TBL WHERE USERID=#{userId} AND USERPW=#{userPw}
     </select>
-    
+
     
 </mapper>

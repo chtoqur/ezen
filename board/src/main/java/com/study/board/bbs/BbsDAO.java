@@ -21,4 +21,21 @@ public class BbsDAO {
     {
         return sqlSessionTemplate.selectList("selectBbsList", vo);
     }
+
+    public BbsTblVO selectBbsContent(BbsTblVO vo) throws Exception
+    {
+        return sqlSessionTemplate.selectOne("selectBbsContent", vo);
+    }
+
+    // 업데이트 하는 개수를 리턴(업데이트가 여러개인 경우를 대비)
+    public int updateBbsContent(BbsTblVO vo) throws Exception
+    {
+        return sqlSessionTemplate.update("updateBbsContent", vo);
+    }
+
+    public int insertBbsContent(BbsTblVO vo) throws Exception
+    {
+        return sqlSessionTemplate.update("insertBbsContent", vo);
+    }
+
 }
