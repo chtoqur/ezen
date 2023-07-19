@@ -8,21 +8,19 @@
 <body>
     <h1>Login</h1>
 
-    <form action="/login" method="post" name="frmLogin" id="frmLogin">
-        <!-- ID/PW와 인풋 사이 마진 조절을 위해 table 테크닉-->
-        <table>
-            <tr>
-                <!-- name은 서버에서 인식하는 이름, id는 jsp 내부 페이지 인식용 -->
-                <td><label for="userId">아이디</label></td>
-                <td><input type="text" name="userId" id="userId"></td>
-            </tr>
+    <!-- ID/PW와 인풋 사이 마진 조절을 위해 table 테크닉-->
+    <table>
+        <tr>
+            <!-- name은 서버에서 인식하는 이름, id는 jsp 내부 페이지 인식용 -->
+            <td><label for="userId">아이디</label></td>
+            <td><input type="text" name="userId" id="userId"></td>
+        </tr>
 
-            <tr>
-                <td><label for="userPw">패스워드</label></td>
-                <td><input type="text" name="userPw" id="userPw"></td>
-            </tr>
-        </table>
-    </form>
+        <tr>
+            <td><label for="userPw">패스워드</label></td>
+            <td><input type="text" name="userPw" id="userPw"></td>
+        </tr>
+    </table>
 
     <!-- button의 디폴트 기능은 submit이기 때문에 사용자가 수동 핸들하기 위해서
          button이라고 명시적으로 하는 것이 좋음 -->
@@ -37,6 +35,7 @@
         <button type="button" id="btnFindPw">PW 찾기</button>
     </div>
 
+<script src="/JS/jquery-3.7.0.min.js"></script>
 <script>
 (()=>{
 
@@ -48,39 +47,59 @@
     const btnJoin = document.querySelector('#btnJoin');
     const btnFindId = document.querySelector('#btnFindId');
     const btnFindPw = document.querySelector('#btnFindPw');
-
+    
+    const frmLogin = document.querySelector('#frmLogin');
+    const userId = document.querySelector('#userId');
+    const userPw = document.querySelector('#userPw');
     
     const checkInputStatus = function()
     {
-        const frmLogin = document.querySelector('#frmLogin');
-
-        if((frmLogin.userId.value == "") || (frmLogin.userPw.value == ""))
+        if((userId.value.length > 0) && (userPw.value.length > 0))
         {
-            alert("아이디와 패스워드를 입력해주세요.")
+            return true;
         }
         else
         {
-            if("${userAccountData}" === "NotExist")
-            {
-                alert("존재하지 않는 계정입니다. 회원가입 후 이용해주세요.");
-            }
+            alert("아이디와 패스워드를 입력해주세요.")
+            return false;
         }
     }
-
 
     ////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////// 이벤트 핸들러 영역 //////////////////////////////
 
     btnLogin.addEventListener('click', ()=>{
-        // ID, PW 서버로 전달
-
-        checkInputStatus();
-
-        // 1. 클릭 시 마다 실시간으로 form DOM을 로딩한다. 
-        const frmLogin = document.querySelector('#frmLogin');
-
-        // 2. form DOM의 submit 함수를 호출한다. > 서버로 전송 완료
-        frmLogin.submit();
+        
+        if (true == checkInputStatus())
+        {
+            let requestData = {
+                userId : userId.value,
+                userPw : userPw.value
+            };
+    
+            console.log(requestData);
+    
+            $.ajax({
+                url : '/login',
+                type : 'POST',
+                data : requestData,
+                success : function(data)
+                {
+                    if (data === "OK")
+                    {
+                        location.href = "/index";
+                    }
+                    else if ((data === "FAIL"))
+                    {
+                        alert("존재하지 않는 계정입니다. 아이디와 패스워드를 확인해주세요.");
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
+            });
+        }
     });
 
     btnIndex.addEventListener('click', ()=>{
@@ -88,7 +107,7 @@
     });
 
     btnJoin.addEventListener('click', ()=>{
-
+        location.href = '/join';
     });
 
     btnFindId.addEventListener('click', ()=>{

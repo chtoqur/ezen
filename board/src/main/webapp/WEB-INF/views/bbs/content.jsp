@@ -80,6 +80,14 @@
             content : txtContent.value
         };
 
+        // 수정이 완료되면 수정 내용을 서버에 던지고,
+        // 서버에서 그 데이터(수정 내용)를 다시 받는 것이 아니라
+        // 
+
+        // 만약 수정이 완료되었을 때 다른 페이지로 이동시키려면 에이젝스가 아닌,
+        // form 전송으로 처리하면 됨 보낸 다음에 서버에서 판단해서 이동시키면 되기 때문에 
+        // 서버에서 reDirect하면 완료. 에이젝스를 사용할 이유가 없음
+        // cf. input:hidden으로 생성하면 사용자에게는 보이지 않으면서 함께 전송시킬 수 있음
         $.ajax({
             url : '/bbs/content',
             type : 'POST',
@@ -98,26 +106,13 @@
             }
         });
         
-        // if (myContent == true)
-        // {
-        //     if (confirm("수정하시겠습니까?"))
-        //     {
-        //         const editContent = document.querySelector('#editContent');
-        //         editContent.submit();   // 서버로 전송
-
-        //         // txtTitle.setAttribute('value', '${updateVO.title}');
-        //         location.href = '/index';
-        //     }
-        // }
-        
-        // 바뀐 정보를 서버에 던져주고,
-        // 서버가 받았을 때 
     })
 
     /////////////////////////////////////////////////////////////////
     // 호출부
     checkMyContent();   // 본인이 작성한 글인지 체크 > boolean
-    setUiObject();
+    setUiObject();      // checkMyContent()의 결과 myContent의 boolean 여부에 따라
+                        // 수정 기능의 상태를 변경해준다.
         
 })(); 
 </script>

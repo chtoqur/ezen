@@ -4,11 +4,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.web.ServerProperties.Reactive.Session;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.study.board.common.SessionUtil;
 import com.study.board.user.UserDAO;
@@ -52,32 +54,19 @@ public class MainController {
 
     // 아이디 패스워드를 넘겨서 로그인을 실제로 처리해달라는 요청
     @PostMapping("/login")
-    public void login(@ModelAttribute("UserTblVO") UserTblVO vo,
-                        HttpServletResponse response,
-                        HttpServletRequest request, Model model) throws Exception
+    @ResponseBody
+    public String login(@ModelAttribute("UserTblVO") UserTblVO vo, HttpServletRequest request, Model model) throws Exception
     {
-        // UserTblVo의 데이터가 잘 넘어왔는지 테스트
-        // System.out.println(vo.getUserId());
-        // System.out.println(vo.getUserPw());
-
-        // 오라클에 쿼리를 전송 후 결과 받아오기
-        // DAO가 필요함 > UserDAO 생성
         UserTblVO resultVO = userDAO.selectOneUser(vo);
-        System.out.println(resultVO);
-    
-        // DB에 해당 계정이 있는지 확인
+
         if (resultVO == null)
         {
-            // 1. 사용자 정보 존재하지 않는 경우 로그인 화면 재출력
-            model.addAttribute("userAccountData", "NotExist");
-            response.sendRedirect("login");
+            return "FAIL";
         }
         else
         {
-            // 2. 사용자가 존재하는 경우 세션에 정보 저장
             SessionUtil.set(request, "USER", resultVO);
-            // 인덱스로 해당 정보 보내기
-            response.sendRedirect("index");
+            return "OK";
         }
     }
 
@@ -88,6 +77,48 @@ public class MainController {
         // 세션 삭제 후 인덱스로
         SessionUtil.remove(request, "USER");
         response.sendRedirect("index");
+    }
+
+    @GetMapping("/join")
+    public String join()
+    {
+        return "join";
+    }
+
+    @PostMapping("/checkId")
+    @ResponseBody
+    public String checkId(@ModelAttribute("UserTblVO") UserTblVO vo) throws Exception
+    {
+        // 1. 넘어온 데이터(ID값)와 일치하는 유저가 DB에 존재하는지 확인
+        UserTblVO resultVO = userDAO.selectOneUserById(vo);
+        
+        // 2-1. 일치하는 정보 존재한다면 아이디 사용 불가
+        if (resultVO != null)
+        {
+            return "FAIL";
+        }
+        // 2-2. 일치하는 정보 존재하지 않는다면 아이디 사용 가능
+        else
+        {
+            return "OK";
+        }
+    }
+
+    @PostMapping("/join")
+    @ResponseBody
+    public String join(@ModelAttribute("UserTblVO") UserTblVO vo) throws Exception
+    {
+        int insertUserCount = userDAO.insertOneUser(vo);
+
+        if (insertUserCount == 1)
+        {
+            return "OK";
+        }
+        else
+        {
+            return "FAIL";
+        }
+
     }
 
 }

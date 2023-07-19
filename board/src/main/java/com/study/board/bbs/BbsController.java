@@ -50,10 +50,12 @@ public class BbsController {
     @GetMapping("/bbs/content")
     public String content(@ModelAttribute("BbsTblVO") BbsTblVO vo, Model model) throws Exception
     {
+        // userId, seq에 맞는 게시물을 가지고 온다.
         BbsTblVO resultVO = bbsDAO.selectBbsContent(vo);
-        // 게시판 정보와 함께 사용자 계정(로그인) 정보도 함께 전송
+        // 세션 정보를 가지고 온다.
         UserTblVO userTblVO = (UserTblVO)SessionUtil.getAttribute("USER");
-
+        
+        // 게시판 정보와 사용자 세션 정보를 모델에 저장한다.
         model.addAttribute("vo", resultVO);     // content row 정보
         model.addAttribute("session", userTblVO);  // log-in user 정보
         // cf. 만약 resultVO나 userTblVO가 null인 경우 model에서 알아서
@@ -63,8 +65,9 @@ public class BbsController {
     }
 
     @GetMapping("/bbs/newcontent")
-    public String newContent(@ModelAttribute("BbsTblVO") BbsTblVO vo, Model model) throws Exception
+    public String newContent(Model model) throws Exception
     {
+        // 어느 계정으로 로그인 된 상태인지 세션 정보를 전송함
         UserTblVO userTblVO = (UserTblVO)SessionUtil.getAttribute("USER");
         model.addAttribute("session", userTblVO);   // log-in user 정보
 
@@ -77,7 +80,7 @@ public class BbsController {
     {
         int updateCount = bbsDAO.insertBbsContent(vo);
         
-        if (updateCount >= 1)
+        if (updateCount == 1)
         {
             return "OK";
         }

@@ -157,8 +157,9 @@
     }
 
 
-    //////////////////////////////////////////////////////////
-    ////////////////////// 이벤트 핸들러 /////////////////////
+    ////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////// 이벤트 핸들러 영역 //////////////////////////////
+    
     btnLogin.addEventListener('click', ()=>{
 
         // 로그인 상태일 시 로그아웃
@@ -218,14 +219,13 @@
         if (curSection == (totalSectionNum - 1))
         {
             let deleteBtn = ((totalSectionNum + 1) * pagesPerSection) - (totalPage + 1);
-            let count2 = 1
+            let startIndex = pagesPerSection - deleteBtn;
 
             if (deleteBtn > 0)
             {
-                for (let i = 0; i < deleteBtn; i++)
+                for (let i = startIndex; i < pagesPerSection; i++)
                 {
-                    btns[count2].style.display = 'inline';
-                    count2++;
+                    btns[i].style.display = 'inline';
                 }
             }
         }
@@ -266,14 +266,13 @@
         if (curSection == totalSectionNum)
         {
             let deleteBtn = ((totalSectionNum + 1) * pagesPerSection) - (totalPage + 1);
-            let count2 = 1
+            let startIndex = pagesPerSection - deleteBtn;
             
             if (deleteBtn > 0)
             {
-                for (let i = 0; i < deleteBtn; i++)
+                for (let i = startIndex; i < pagesPerSection; i++)
                 {
-                    btns[count2].style.display = 'none';
-                    count2++;
+                    btns[i].style.display = 'none';
                 }
             }
         }

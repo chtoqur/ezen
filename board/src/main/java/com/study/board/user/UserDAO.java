@@ -22,7 +22,16 @@ public class UserDAO {
         // sqlSessionTemplate는 1.select 2.insert 3.update 4.delete 함수를 지원
         // 그 중 select는 1-1. select(selectOne)과 1-2. select(selectList) 사용 가능
         return sqlSessionTemplate.selectOne("selectOneUser", vo);
+    }
 
+    public UserTblVO selectOneUserById(UserTblVO vo) throws Exception
+    {
+        return sqlSessionTemplate.selectOne("selectOneUserById", vo);
+    }
+
+    public int insertOneUser(UserTblVO vo) throws Exception
+    {
+        return sqlSessionTemplate.update("insertOneUser", vo);
     }
 
 }
